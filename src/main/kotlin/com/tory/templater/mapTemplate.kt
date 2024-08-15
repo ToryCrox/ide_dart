@@ -99,7 +99,7 @@ private fun Template.addToMap(params: MapTemplateParams) {
 
                 addTextSegment(":")
                 addSpace()
-                toJsonMapValue(it.type, it.variableName)
+                toJsonMapValue(it.type, it.variableName, isEnum = it.isEnum)
                 addComma()
                 addNewLine()
             }
@@ -108,15 +108,17 @@ private fun Template.addToMap(params: MapTemplateParams) {
     }
 }
 
-private fun Template.toJsonMapValue(type: String, variableName: String) {
-    if (type.mainType() in setOf("List", "Set") && type.subType()  !in com.tory.constants.DART_BASIC_TYPES){
+private fun Template.toJsonMapValue(type: String, variableName: String, isEnum: Boolean = false) {
+    if (type.mainType() in setOf("List", "Set") && type.subType() !in com.tory.constants.DART_BASIC_TYPES) {
         addTextSegment(variableName)
         addTextSegment(".map((e)=> ")
         toJsonMapValue(type.subType(), "e")
         addTextSegment(").toList()")
     } else if (type.mainType() in com.tory.constants.DART_BASIC_TYPES) {
         addTextSegment(variableName)
-    }  else {
+    } else if (isEnum) {
+        addTextSegment("$variableName.name")
+    } else {
         addTextSegment("$variableName.toMap()")
     }
 }
@@ -182,7 +184,8 @@ private fun Template.addFromMap(
                 val addMapValue = {
                     addTextSegment(TemplateConstants.MAP_VARIABLE_NAME)
                     withBrackets {
-                        val jsonKey = if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
+                        val jsonKey =
+                            if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
                         "'$jsonKey'".also { keyParam ->
                             if (addKeyMapper) {
                                 addTextSegment(TemplateConstants.KEYMAPPER_VARIABLE_NAME)
@@ -196,9 +199,10 @@ private fun Template.addFromMap(
                     }
                 }
 
-                val isWrapped = withParseWrapper(it.type, params.parseWrapper) {
-                    addMapValue()
-                }
+                val isWrapped =
+                    withParseWrapper(typeName = it.type, parseWrapper = params.parseWrapper, isEnum = it.isEnum) {
+                        addMapValue()
+                    }
 
                 // 非空设置默认值
                 if (!isWrapped && !it.isNullable) {
@@ -221,9 +225,10 @@ private fun Template.addFromMap(
 fun Template.withParseWrapper(
     typeName: String,
     parseWrapper: ParseWrapper,
+    isEnum: Boolean = false,
     action: Template.() -> Unit
 ): Boolean {
-    val parseWrapperMethod = when(typeName){
+    val parseWrapperMethod = when (typeName) {
         "String" -> "parseString"
         "int" -> "parseInt"
         "double" -> "parseDouble"
@@ -259,9 +264,20 @@ fun Template.withParseWrapper(
         }
         addTextSegment(".toSet()")
         return true
-    } else if (typeName == "dynamic"){
+    } else if (typeName == "dynamic") {
         action()
         return false
+    } else if (isEnum) {
+        this.addTextSegment(typeName)
+        this.addTextSegment(".values.asNameMap()[")
+        this.addTextSegment("${parseWrapper.parseClassName}.parseString")
+        this.withParentheses {
+            action()
+        }
+        this.addTextSegment("]")
+        this.addTextSegment(" ?? $typeName.values[0]")
+
+        return true
     } else {
         this.addTextSegment(typeName)
         this.addTextSegment(".fromMap")

@@ -3,11 +3,8 @@ package com.tory.action.my
 import com.tory.action.StaticActionProcessor
 import com.tory.action.data.GenerationData
 import com.tory.action.data.PerformAction
-import com.tory.declaration.isNullable
-import com.tory.declaration.variableName
 import com.tory.ext.psi.findChildrenByType
 import com.tory.templater.HashCodeTemplateParams
-import com.tory.templater.NamedVariableTemplateParamImpl
 import com.tory.templater.TemplateConstants
 import com.tory.templater.createHashCodeTemplate
 import com.intellij.codeInsight.template.TemplateManager

@@ -56,14 +56,7 @@ fun createEqualsTemplate(
                 addNewLine()
 
                 val variables: List<VariableTemplateParam> = mutableListOf<VariableTemplateParam>().apply {
-                    add(
-                        VariableTemplateParam(
-                            variableName = "runtimeType",
-                            isNullable = false,
-                            type = "Type",
-                            publicVariableName = "runtimeType"
-                        )
-                    )
+                    add(equalsDefaultTemplateParam)
                     addAll(selectedVariables)
                 }
 

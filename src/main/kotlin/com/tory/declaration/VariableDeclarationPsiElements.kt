@@ -72,6 +72,10 @@ val VariableDeclarationPsiElements.dartClass: DartClass?
 val VariableDeclarationPsiElements.isEnum: Boolean
     get() = dartClass?.isEnum == true
 
+val VariableDeclarationPsiElements.enumVariableList: List<String>
+    get() = dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: ""} ?: emptyList()
+
+
 fun isVariableNamePrivate(variableName: String): Boolean =
     variableName.startsWith("_")
 
@@ -124,6 +128,8 @@ fun VariableDeclaration.toVariableTemplateParam(): VariableTemplateParam {
         type = fullTypeName
             ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
         publicVariableName = publicVariableName,
-        isNullable = isNullable
+        isNullable = isNullable,
+        isEnum = isEnum,
+        enumVariableList = enumVariableList
     )
 }

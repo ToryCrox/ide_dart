@@ -47,17 +47,17 @@ fun createConstructorTemplate(
                     addNewLine()
 
                     publicVariableNames.forEach {
-                        if (addRequiredAnnotation) {
-                            addTextSegment("@required")
-                            addSpace()
-                        }
-                        if (nullSafety && !it.isNullable) {
+                        if (!it.isNullable) {
                             addTextSegment("required")
                             addSpace()
                         }
 
                         addTextSegment("this.")
                         addTextSegment(it.variableName)
+//                        if (!it.isNullable) {
+//                            addTextSegment(" = ")
+//                            addTextSegment(it.defaultValue)
+//                        }
                         addComma()
                         addNewLine()
                     }
