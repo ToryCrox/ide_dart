@@ -8,7 +8,7 @@ import com.intellij.codeInsight.template.TemplateManager
 
 data class MapTemplateParams(
     val className: String,
-    val variables: List<AliasedVariableTemplateParam>,
+    val variables: List<VariableTemplateParam>,
     val useNewKeyword: Boolean,
     val addKeyMapper: Boolean,
     val noImplicitCasts: Boolean,

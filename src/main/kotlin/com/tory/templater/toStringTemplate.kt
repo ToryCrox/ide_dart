@@ -7,7 +7,7 @@ import com.intellij.codeInsight.template.TemplateManager
 
 data class ToStringTemplateParams(
     val className: String,
-    val variables: List<NamedVariableTemplateParam>
+    val variables: List<VariableTemplateParam>
 )
 
 fun createToStringTemplate(

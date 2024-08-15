@@ -6,8 +6,8 @@ import com.intellij.codeInsight.template.TemplateManager
 
 data class ConstructorTemplateParams(
     val className: String,
-    val publicVariables: List<PublicVariableTemplateParam>,
-    val privateVariables: List<AliasedVariableTemplateParam>,
+    val publicVariables: List<VariableTemplateParam>,
+    val privateVariables: List<VariableTemplateParam>,
     val addRequiredAnnotation: Boolean,
     val addConstQualifier: Boolean,
     val nullSafety: Boolean

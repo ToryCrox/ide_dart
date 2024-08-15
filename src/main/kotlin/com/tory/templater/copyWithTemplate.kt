@@ -6,7 +6,7 @@ import com.intellij.codeInsight.template.TemplateManager
 
 data class CopyWithTemplateParams(
     val className: String,
-    val variables: List<AliasedVariableTemplateParam>,
+    val variables: List<VariableTemplateParam>,
     val copyWithMethodName: String,
     val useNewKeyword: Boolean,
     val generateOptimizedCopy: Boolean,

@@ -29,11 +29,11 @@ interface PublicVariableTemplateParam : NamedVariableTemplateParam
 interface AliasedVariableTemplateParam : TypedVariableTemplateParam, PrivateNamedVariableTemplateParam
 
 // The name the named constructor parameter has - needed when called from a copy/fromJson method
-val AliasedVariableTemplateParam.namedConstructorParamName: String
+val VariableTemplateParam.namedConstructorParamName: String
     get() = publicVariableName
 
 // To make the reading and writing from the map consistent
-val AliasedVariableTemplateParam.mapKeyString: String
+val VariableTemplateParam.mapKeyString: String
     get() = variableName
 
 // Classes
@@ -50,8 +50,15 @@ data class AliasedVariableTemplateParamImpl(
 ) : AliasedVariableTemplateParam
 
 
+data class VariableTemplateParam(
+    val variableName: String,
+    val isNullable: Boolean,
+    val type: String,
+    val publicVariableName: String
+)
+
 /// 默认值
-val AliasedVariableTemplateParam.defaultValue: String
+val VariableTemplateParam.defaultValue: String
     get() = when (type){
         "String" -> "''"
         "int" -> "0"

@@ -13,6 +13,7 @@ import com.tory.templater.createHashCodeTemplate
 import com.intellij.codeInsight.template.TemplateManager
 import com.jetbrains.lang.dart.psi.DartClassDefinition
 import com.jetbrains.lang.dart.psi.DartGetterDeclaration
+import com.tory.declaration.toVariableTemplateParam
 
 class MyHashCodeAction {
 
@@ -38,10 +39,7 @@ class MyHashCodeAction {
                 templateManager = templateManager,
                 params = HashCodeTemplateParams(
                     declarations.map {
-                        NamedVariableTemplateParamImpl(
-                            it.variableName,
-                            isNullable = it.isNullable
-                        )
+                        it.toVariableTemplateParam()
                     }
                 )
             )

@@ -10,13 +10,11 @@ import com.tory.declaration.fullTypeName
 import com.tory.declaration.isNullable
 import com.tory.declaration.variableName
 import com.tory.ext.psi.extractClassName
-import com.tory.templater.AliasedVariableTemplateParam
-import com.tory.templater.AliasedVariableTemplateParamImpl
-import com.tory.templater.MapTemplateParams
-import com.tory.templater.createMapTemplate
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.jetbrains.lang.dart.psi.DartClassDefinition
+import com.tory.declaration.toVariableTemplateParam
+import com.tory.templater.*
 
 class MapAction : BaseAnAction() {
 
@@ -39,15 +37,9 @@ class MapAction : BaseAnAction() {
 
             val (project, _, _, _) = actionData
 
-            val variableNames: List<AliasedVariableTemplateParam> = declarations
+            val variableNames: List<VariableTemplateParam> = declarations
                 .map {
-                    AliasedVariableTemplateParamImpl(
-                        variableName = it.variableName,
-                        type = it.fullTypeName
-                            ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
-                        publicVariableName = it.publicVariableName,
-                        isNullable = it.isNullable
-                    )
+                    it.toVariableTemplateParam()
                 }
 
             val templateManager = TemplateManager.getInstance(project)

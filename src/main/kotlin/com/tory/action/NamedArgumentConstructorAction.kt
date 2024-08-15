@@ -33,25 +33,16 @@ class NamedArgumentConstructorAction : BaseAnAction() {
             val (actionData, dartClass, declarations) = generationData
             val (project, _, _, _) = actionData
 
-            val publicVariables: List<PublicVariableTemplateParam> = declarations
+            val publicVariables: List<VariableTemplateParam> = declarations
                 .filter { it.isPublic }
                 .map {
-                    PublicVariableTemplateParamImpl(
-                        it.variableName,
-                        isNullable = it.isNullable
-                    )
+                    it.toVariableTemplateParam()
                 }
 
-            val privateVariables: List<AliasedVariableTemplateParam> = declarations
+            val privateVariables: List<VariableTemplateParam> = declarations
                 .filter { it.isPrivate }
                 .map {
-                    AliasedVariableTemplateParamImpl(
-                        variableName = it.variableName,
-                        type = it.fullTypeName
-                            ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
-                        publicVariableName = it.publicVariableName,
-                        isNullable = it.isNullable
-                    )
+                    it.toVariableTemplateParam()
                 }
 
             val templateManager = TemplateManager.getInstance(project)

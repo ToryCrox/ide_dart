@@ -14,6 +14,7 @@ import com.tory.templater.ToStringTemplateParams
 import com.tory.templater.createToStringTemplate
 import com.intellij.codeInsight.template.TemplateManager
 import com.jetbrains.lang.dart.psi.DartClassDefinition
+import com.tory.declaration.toVariableTemplateParam
 
 class MyToStringAction {
     companion object : StaticActionProcessor {
@@ -40,10 +41,7 @@ class MyToStringAction {
                 params = ToStringTemplateParams(
                     className = dartClassName,
                     variables = declarations.map {
-                        NamedVariableTemplateParamImpl(
-                            it.variableName,
-                            isNullable = it.isNullable
-                        )
+                        it.toVariableTemplateParam()
                     }
                 ),
                 configuration = configuration

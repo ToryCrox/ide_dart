@@ -6,6 +6,7 @@ import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponentName
 import com.jetbrains.lang.dart.psi.DartType
 import com.jetbrains.lang.dart.psi.DartVarInit
+import com.tory.templater.VariableTemplateParam
 
 // DartVarAccessDeclaration can not be null
 // DartType can be null
@@ -112,4 +113,17 @@ fun Iterable<VariableDeclarationPsiElements>.allMembersFinal(): Boolean {
     return this.asSequence()
         .filter { it.isMember }
         .all { it.isFinal }
+}
+
+/**
+ * 转换成需要使用的 VariableTemplateParam 类
+ */
+fun VariableDeclaration.toVariableTemplateParam(): VariableTemplateParam {
+    return VariableTemplateParam(
+        variableName = variableName,
+        type = fullTypeName
+            ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
+        publicVariableName = publicVariableName,
+        isNullable = isNullable
+    )
 }

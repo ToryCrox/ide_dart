@@ -12,6 +12,7 @@ import com.tory.ext.psi.findMethodsByName
 import com.tory.templater.*
 import com.intellij.codeInsight.template.TemplateManager
 import com.jetbrains.lang.dart.psi.DartClassDefinition
+import com.tory.declaration.toVariableTemplateParam
 
 class MyEqualsAction {
 
@@ -40,12 +41,7 @@ class MyEqualsAction {
                 EqualsTemplateParams(
                     className = dartClassName,
                     variables = declarations.map {
-                        AliasedVariableTemplateParamImpl(
-                            variableName = it.variableName,
-                            isNullable = it.isNullable,
-                            publicVariableName = it.publicVariableName,
-                            type = it.fullTypeName ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor")
-                        )
+                        it.toVariableTemplateParam()
                     }
                 )
             )

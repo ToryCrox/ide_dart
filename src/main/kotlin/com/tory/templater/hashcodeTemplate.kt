@@ -5,7 +5,7 @@ import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 
 data class HashCodeTemplateParams(
-    val variables: List<NamedVariableTemplateParam>
+    val variables: List<VariableTemplateParam>
 )
 
 fun createHashCodeTemplate(

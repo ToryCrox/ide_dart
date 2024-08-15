@@ -7,7 +7,7 @@ import com.intellij.codeInsight.template.TemplateManager
 
 data class EqualsTemplateParams(
     val className: String,
-    val variables: List<AliasedVariableTemplateParam>
+    val variables: List<VariableTemplateParam>
 )
 
 fun createEqualsTemplate(
@@ -55,14 +55,13 @@ fun createEqualsTemplate(
 
                 addNewLine()
 
-                val variables: List<AliasedVariableTemplateParam> = mutableListOf<AliasedVariableTemplateParam>().apply {
+                val variables: List<VariableTemplateParam> = mutableListOf<VariableTemplateParam>().apply {
                     add(
-                        AliasedVariableTemplateParamImpl(
+                        VariableTemplateParam(
                             variableName = "runtimeType",
                             isNullable = false,
                             type = "Type",
                             publicVariableName = "runtimeType"
-
                         )
                     )
                     addAll(selectedVariables)
