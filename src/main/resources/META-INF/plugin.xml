@@ -8,46 +8,46 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable
                 groupId="editor"
-                instance="andrasferenczi.configuration.DataClassConfigurable"
+                instance="com.tory.configuration.DataClassConfigurable"
         />
     </extensions>
 
     <actions>
-        <action id="andrasferenczi.action.NamedArgumentConstructorAction"
-                class="andrasferenczi.action.NamedArgumentConstructorAction"
+        <action id="com.tory.action.NamedArgumentConstructorAction"
+                class="com.tory.action.NamedArgumentConstructorAction"
                 text="Named Argument Constructor">
             <add-to-group group-id="GenerateGroup"
                           anchor="after"
                           relative-to-action="Generate.Named.Constructor.Dart"/>
         </action>
-        <action id="andrasferenczi.action.DartCopyWithAction"
-                class="andrasferenczi.action.DartCopyWithAction"
+        <action id="com.tory.action.DartCopyWithAction"
+                class="com.tory.action.DartCopyWithAction"
                 text="Copy">
             <add-to-group group-id="GenerateGroup"
                           anchor="after"
-                          relative-to-action="andrasferenczi.action.NamedArgumentConstructorAction"/>
+                          relative-to-action="com.tory.action.NamedArgumentConstructorAction"/>
         </action>
-        <action id="andrasferenczi.action.MapAction"
-                class="andrasferenczi.action.MapAction"
+        <action id="com.tory.action.MapAction"
+                class="com.tory.action.MapAction"
                 text="toMap() and fromMap()">
             <add-to-group group-id="GenerateGroup"
                           anchor="after"
-                          relative-to-action="andrasferenczi.action.DartCopyWithAction"/>
+                          relative-to-action="com.tory.action.DartCopyWithAction"/>
         </action>
-        <action id="andrasferenczi.action.JsonAction"
-                class="andrasferenczi.action.JsonAction"
+        <action id="com.tory.action.JsonAction"
+                class="com.tory.action.JsonAction"
                 text="toJson() and fromJson()">
             <add-to-group group-id="GenerateGroup"
                           anchor="after"
-                          relative-to-action="andrasferenczi.action.MapAction"/>
+                          relative-to-action="com.tory.action.MapAction"/>
         </action>
 
-        <action id="andrasferenczi.action.FullDataAction"
-                class="andrasferenczi.action.FullDataAction"
+        <action id="com.tory.action.FullDataAction"
+                class="com.tory.action.FullDataAction"
                 text="一键创建所有数据类方法">
             <add-to-group group-id="GenerateGroup"
                           anchor="after"
-                          relative-to-action="andrasferenczi.action.MapAction"/>
+                          relative-to-action="com.tory.action.MapAction"/>
         </action>
 
     </actions>
