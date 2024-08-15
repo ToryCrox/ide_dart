@@ -1,13 +1,20 @@
 package com.tory.action
 
-import com.tory.action.init.ActionData
+import com.intellij.codeInsight.template.Template
+import com.intellij.codeInsight.template.TemplateManager
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
+import com.jetbrains.lang.dart.psi.*
 import com.tory.action.data.GenerationData
 import com.tory.action.data.PerformAction
 import com.tory.action.data.combineAll
+import com.tory.action.init.ActionData
 import com.tory.action.my.MyEqualsAction
 import com.tory.action.my.MyHashCodeAction
 import com.tory.action.my.MyToStringAction
 import com.tory.action.utils.*
+import com.tory.declaration.variableName
 import com.tory.ext.addNewLine
 import com.tory.ext.addSpace
 import com.tory.ext.createDartTemplate
@@ -17,11 +24,25 @@ import com.tory.ext.psi.isTopClassLevel
 import com.tory.templater.TemplateConstants
 import com.tory.templater.TemplateType
 import com.tory.traversal.TraversalType
-import com.intellij.codeInsight.template.Template
-import com.intellij.codeInsight.template.TemplateManager
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.psi.PsiComment
-import com.jetbrains.lang.dart.psi.DartClassDefinition
+
+fun isEnumType(dartType: DartType?): Boolean {
+    if (dartType == null) {
+        return false
+    }
+    // 获取 DartType 的引用表达式
+    val typeReference = dartType.referenceExpression ?: return false
+
+    // 解析引用表达式并获取对应的元素
+    val resolvedElement: PsiElement = typeReference.resolve() ?: return false
+
+    //val typeDefinition: DartTypeDefinition = resolvedElement as DartTypeDefinition
+    val parent: PsiElement = resolvedElement.getParent()
+    if (parent is DartClass) {
+        return parent.isEnum
+    }
+
+    return false
+}
 
 class FullDataAction : BaseAnAction() {
 

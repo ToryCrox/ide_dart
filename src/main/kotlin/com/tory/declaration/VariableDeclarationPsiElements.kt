@@ -2,6 +2,7 @@ package com.tory.declaration
 
 import com.tory.DartFileNotWellFormattedException
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponentName
 import com.jetbrains.lang.dart.psi.DartType
 import com.jetbrains.lang.dart.psi.DartVarInit
@@ -51,7 +52,24 @@ val VariableDeclarationPsiElements.hasInitializer: Boolean
     get() = initializer !== null
 
 val VariableDeclarationPsiElements.variableName: String
-    get() = name.name ?: throw com.tory.DartFileNotWellFormattedException("Encountered a variable which does not have a name.")
+    get() = name.name ?: throw DartFileNotWellFormattedException("Encountered a variable which does not have a name.")
+
+/**
+ * 获取成员变量的dartClass 类型
+ * DartEnumDefinitionImpl  枚举
+ * DartClassDefinitionImpl 普通类
+ */
+val VariableDeclarationPsiElements.dartClass: DartClass?
+    get() {
+        val target = dartType?.referenceExpression?.resolve()?.parent
+        return if (target is DartClass) target else null
+    }
+
+/**
+ * 是否是枚举
+ */
+val VariableDeclarationPsiElements.isEnum: Boolean
+    get() = dartClass?.isEnum == true
 
 fun isVariableNamePrivate(variableName: String): Boolean =
     variableName.startsWith("_")

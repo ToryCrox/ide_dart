@@ -50,13 +50,14 @@ data class AliasedVariableTemplateParamImpl(
 ) : AliasedVariableTemplateParam
 
 
+/// 默认值
 val AliasedVariableTemplateParam.defaultValue: String
     get() = when (type){
         "String" -> "''"
         "int" -> "0"
         "double" -> ""
         "bool" -> "false"
-        else -> when{
+        else -> when {
             type.startsWith("List") -> "const []"
             type.startsWith("Map") -> "const {}"
             type.startsWith("Set") -> "const {}"
