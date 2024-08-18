@@ -4,6 +4,8 @@
     <vendor>Tory</vendor>
 
     <depends>Dart</depends>
+    <!--    To prevent it from being legacy-->
+    <depends>com.intellij.modules.lang</depends>
 
 
     <description><![CDATA[
