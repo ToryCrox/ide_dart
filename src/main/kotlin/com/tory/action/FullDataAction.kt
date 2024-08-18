@@ -37,19 +37,6 @@ class FullDataAction : BaseAnAction() {
             ?: return null
 
         val generationData = GenerationData(actionData, dartClass, declarations)
-        declarations.forEach {
-            val declaration = it.name.parent as? DartVarAccessDeclaration?
-            if (declaration != null) {
-                val metadataList = declaration.metadataList
-                metadataList.forEach {
-                    println("metadata: ${it.javaClass}, " +
-                            "${it.dartTypeName}, ${it.variableList}")
-                }
-            }
-            println("processAction ${it.modifiers}, ${it.name.name}, ${it.name.parent.javaClass}")
-        }
-
-        val templateManager = TemplateManager.getInstance(project)
 
         val processActions = listOf(
             NamedArgumentConstructorAction,

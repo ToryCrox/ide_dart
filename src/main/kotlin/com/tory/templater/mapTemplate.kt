@@ -85,7 +85,7 @@ private fun Template.addToMap(params: MapTemplateParams) {
             addNewLine()
 
             variables.forEach {
-                val jsonKey = if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
+                val jsonKey = it.jsonKey ?: if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
                 "'$jsonKey'".also { keyParam ->
                     if (addKeyMapper) {
                         addTextSegment(TemplateConstants.KEYMAPPER_VARIABLE_NAME)
@@ -184,8 +184,7 @@ private fun Template.addFromMap(
                 val addMapValue = {
                     addTextSegment(TemplateConstants.MAP_VARIABLE_NAME)
                     withBrackets {
-                        val jsonKey =
-                            if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
+                        val jsonKey = it.jsonKey ?: if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
                         "'$jsonKey'".also { keyParam ->
                             if (addKeyMapper) {
                                 addTextSegment(TemplateConstants.KEYMAPPER_VARIABLE_NAME)

@@ -13,8 +13,9 @@ data class VariableTemplateParam(
     val isNullable: Boolean,
     val type: String,
     val publicVariableName: String,
-    val isEnum: Boolean,
-    val enumVariableList: List<String>
+    val jsonKey: String? = null,
+    val isEnum: Boolean = false,
+    val enumVariableList: List<String> = emptyList()
 )
 
 val equalsDefaultTemplateParam = VariableTemplateParam(

@@ -8,6 +8,7 @@ import com.jetbrains.lang.dart.psi.DartClassDefinition
 
 /**
  * Returns null if user decided to cancel the operation
+ * 选择变量
  */
 fun selectFieldsWithDialog(
     project: Project,

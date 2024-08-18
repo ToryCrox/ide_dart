@@ -149,7 +149,7 @@ object DeclarationExtractor {
         val declarations = varDeclarations.flatMap { it.extractEntireDeclarations() }
 
         val existingNames = declarations.map { it.variableName }.toSet()
-        return declarations.map {
+        return declarations.filter { !it.isJsonIgnore }.map {
             val newName = createUniquePublicVariableName(
                 it.variableName,
                 existingNames

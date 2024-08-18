@@ -10,7 +10,8 @@ data class ConstructorTemplateParams(
     val privateVariables: List<VariableTemplateParam>,
     val addRequiredAnnotation: Boolean,
     val addConstQualifier: Boolean,
-    val nullSafety: Boolean
+    val nullSafety: Boolean,
+    val isAllRequired: Boolean,
 )
 
 /**
@@ -26,7 +27,8 @@ fun createConstructorTemplate(
         privateVariables,
         addRequiredAnnotation,
         addConstQualifier,
-        nullSafety
+        nullSafety,
+        isAllRequired
     ) = params
 
     return templateManager.createTemplate(
@@ -47,17 +49,17 @@ fun createConstructorTemplate(
                     addNewLine()
 
                     publicVariableNames.forEach {
-                        if (!it.isNullable) {
+                        if (isAllRequired && !it.isNullable) {
                             addTextSegment("required")
                             addSpace()
                         }
 
                         addTextSegment("this.")
                         addTextSegment(it.variableName)
-//                        if (!it.isNullable) {
-//                            addTextSegment(" = ")
-//                            addTextSegment(it.defaultValue)
-//                        }
+                        if (!isAllRequired && !it.isNullable) {
+                            addTextSegment(" = ")
+                            addTextSegment(it.defaultValue)
+                        }
                         addComma()
                         addNewLine()
                     }

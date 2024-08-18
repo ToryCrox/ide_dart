@@ -12,6 +12,7 @@ import com.tory.templater.*
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.jetbrains.lang.dart.psi.DartClassDefinition
+import com.tory.ext.psi.annotationDartTypeList
 
 class NamedArgumentConstructorAction : BaseAnAction() {
 
@@ -50,6 +51,7 @@ class NamedArgumentConstructorAction : BaseAnAction() {
             val dartClassName = dartClass.extractClassName()
             val addConstQualifier = configuration.useConstForConstructor && declarations.allMembersFinal()
 
+            val isAllRequired = dartClass.annotationDartTypeList.contains("JsonAllRequired")
             val template = createConstructorTemplate(
                 templateManager,
                 ConstructorTemplateParams(
@@ -59,7 +61,8 @@ class NamedArgumentConstructorAction : BaseAnAction() {
                     addRequiredAnnotation = configuration.useRequiredAnnotation
                             && !configuration.nullSafety,
                     addConstQualifier = addConstQualifier,
-                    nullSafety = configuration.nullSafety
+                    nullSafety = configuration.nullSafety,
+                    isAllRequired = isAllRequired,
                 )
             )
 

@@ -71,24 +71,56 @@ val VariableDeclarationPsiElements.dartClass: DartClass?
 val VariableDeclarationPsiElements.isEnum: Boolean
     get() = dartClass?.isEnum == true
 
+/**
+ * 枚举列表
+ */
 val VariableDeclarationPsiElements.enumVariableList: List<String>
     get() = dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: "" } ?: emptyList()
 
-/// 注解相关
+/**
+ * 注解相关
+ */
 val VariableDeclarationPsiElements.metadataList: List<DartMetadata>
     get() {
         val declaration = name.parent
         return if (declaration is DartVarAccessDeclaration) declaration.metadataList else emptyList()
     }
 
+/**
+ * 注解类型列表
+ */
+val VariableDeclarationPsiElements.metadataDartTypeList: List<String>
+    get() {
+        return metadataList.map { it.dartTypeName }.filterNotNull()
+    }
+
+/**
+ * 变量是否应该被忽略
+ */
+val VariableDeclarationPsiElements.isJsonIgnore: Boolean
+    get() = metadataDartTypeList.contains("JsonIgnore")
+
+
 /// 注解类型
 val DartMetadata.dartTypeName: String?
     get() = children.filterIsInstance<DartReferenceExpression>().firstOrNull()?.text
 
+/**
+ * 注解的参数
+ */
 val DartMetadata.variableList: List<String>
     get() {
         val argumentList = children.filterIsInstance<DartArguments>().firstOrNull()?.argumentList ?: return emptyList()
-        return argumentList.expressionList.map { it.javaClass.toString() } + argumentList.namedArgumentList.map { it.javaClass.toString() }
+        return argumentList.expressionList.map { it.text } + argumentList.namedArgumentList.map { it.expression.text }
+    }
+
+/**
+ * 获取注解JsonKey上的自定义key
+ */
+val VariableDeclarationPsiElements.customJsonKey: String?
+    get() {
+        val meta = metadataList.firstOrNull { it.dartTypeName == "JsonKey" }
+        return meta?.variableList?.firstOrNull()?.trim('\'', '\"')
     }
 
 fun isVariableNamePrivate(variableName: String): Boolean =
@@ -144,6 +176,7 @@ fun VariableDeclaration.toVariableTemplateParam(): VariableTemplateParam {
             ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
         publicVariableName = publicVariableName,
         isNullable = isNullable,
+        jsonKey = customJsonKey,
         isEnum = isEnum,
         enumVariableList = enumVariableList
     )
