@@ -5,6 +5,12 @@
 
     <depends>Dart</depends>
 
+
+    <description><![CDATA[
+        <p>创建data class所需要的所有方法，构造方法，copyWith，fromMap, toMap等</p>
+        <em>Not an official plugin.<em/>
+    ]]></description>
+
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable
                 groupId="editor"
