@@ -2,16 +2,15 @@ package com.tory.declaration
 
 import com.tory.DartFileNotWellFormattedException
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.jetbrains.lang.dart.psi.DartClass
-import com.jetbrains.lang.dart.psi.DartComponentName
-import com.jetbrains.lang.dart.psi.DartType
-import com.jetbrains.lang.dart.psi.DartVarInit
+import com.jetbrains.lang.dart.psi.*
+import com.tory.ext.psi.findFirstChildByType
 import com.tory.templater.VariableTemplateParam
 
 // DartVarAccessDeclaration can not be null
 // DartType can be null
 interface VariableDeclarationPsiElements {
     val modifiers: List<LeafPsiElement>
+
     // DartType is null if initialized and has a final or const modifier
     val dartType: DartType?
     val name: DartComponentName
@@ -73,8 +72,24 @@ val VariableDeclarationPsiElements.isEnum: Boolean
     get() = dartClass?.isEnum == true
 
 val VariableDeclarationPsiElements.enumVariableList: List<String>
-    get() = dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: ""} ?: emptyList()
+    get() = dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: "" } ?: emptyList()
 
+/// 注解相关
+val VariableDeclarationPsiElements.metadataList: List<DartMetadata>
+    get() {
+        val declaration = name.parent
+        return if (declaration is DartVarAccessDeclaration) declaration.metadataList else emptyList()
+    }
+
+/// 注解类型
+val DartMetadata.dartTypeName: String?
+    get() = children.filterIsInstance<DartReferenceExpression>().firstOrNull()?.text
+
+val DartMetadata.variableList: List<String>
+    get() {
+        val argumentList = children.filterIsInstance<DartArguments>().firstOrNull()?.argumentList ?: return emptyList()
+        return argumentList.expressionList.map { it.javaClass.toString() } + argumentList.namedArgumentList.map { it.javaClass.toString() }
+    }
 
 fun isVariableNamePrivate(variableName: String): Boolean =
     variableName.startsWith("_")
