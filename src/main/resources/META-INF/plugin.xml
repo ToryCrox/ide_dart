@@ -7,7 +7,7 @@
 
 
     <description><![CDATA[
-        <p>创建data class所需要的所有方法，构造方法，copyWith，fromMap, toMap等</p>
+        <p>Create all the required methods for a data class with one click, including the constructor, copyWith, fromMap, toMap, and so on</p>
         <em>Not an official plugin.<em/>
     ]]></description>
 
