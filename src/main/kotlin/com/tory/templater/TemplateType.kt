@@ -13,5 +13,7 @@ enum class TemplateType(
     Equals("equals"),
     HashCode("hashcode"),
 
+    IsEmpty("is_empty"),
+
     Comment("comment")
 }

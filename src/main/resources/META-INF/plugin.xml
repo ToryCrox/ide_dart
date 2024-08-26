@@ -55,7 +55,15 @@
                 text="一键创建所有数据类方法">
             <add-to-group group-id="GenerateGroup"
                           anchor="after"
-                          relative-to-action="com.tory.action.MapAction"/>
+                          relative-to-action="com.tory.action.JsonAction"/>
+        </action>
+
+        <action id="com.tory.action.IsEmptyAction"
+                class="com.tory.action.IsEmptyAction"
+                text="isEmpty">
+            <add-to-group group-id="GenerateGroup"
+                          anchor="after"
+                          relative-to-action="com.tory.action.FullDataAction"/>
         </action>
 
     </actions>

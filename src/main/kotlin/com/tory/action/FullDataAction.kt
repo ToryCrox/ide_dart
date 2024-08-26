@@ -40,6 +40,7 @@ class FullDataAction : BaseAnAction() {
 
         val processActions = listOf(
             NamedArgumentConstructorAction,
+            IsEmptyAction,
             DartCopyWithAction,
             MapAction,
             JsonAction,

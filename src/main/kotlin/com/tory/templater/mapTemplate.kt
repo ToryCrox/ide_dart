@@ -1,7 +1,6 @@
 package com.tory.templater
 
 import com.tory.configuration.ParseWrapper
-import com.tory.constants.DART_BASIC_TYPES
 import com.tory.ext.*
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
@@ -99,7 +98,7 @@ private fun Template.addToMap(params: MapTemplateParams) {
 
                 addTextSegment(":")
                 addSpace()
-                toJsonMapValue(it.type, it.variableName, isEnum = it.isEnum)
+                toJsonMapValue(it.dartType, it.variableName, isEnum = it.isEnum)
                 addComma()
                 addNewLine()
             }
@@ -108,13 +107,19 @@ private fun Template.addToMap(params: MapTemplateParams) {
     }
 }
 
-private fun Template.toJsonMapValue(type: String, variableName: String, isEnum: Boolean = false) {
-    if (type.mainType() in setOf("List", "Set") && type.subType() !in com.tory.constants.DART_BASIC_TYPES) {
-        addTextSegment(variableName)
-        addTextSegment(".map((e)=> ")
-        toJsonMapValue(type.subType(), "e")
-        addTextSegment(").toList()")
-    } else if (type.mainType() in com.tory.constants.DART_BASIC_TYPES) {
+private val DART_BASIC_TYPES = setOf("num", "int", "double", "bool", "String", "List", "Map", "Set", "color")
+private fun Template.toJsonMapValue(dartType: ParamDartType, variableName: String, isEnum: Boolean = false) {
+    if (dartType.typeName in setOf("List", "Set")) {
+        val subType = dartType.argumentTypeList.firstOrNull() ?: dynamicDartType
+        if (subType.typeName in DART_BASIC_TYPES) {
+            addTextSegment(variableName)
+        } else {
+            addTextSegment(variableName)
+            addTextSegment(".map((e)=> ")
+            toJsonMapValue(subType, "e")
+            addTextSegment(").toList()")
+        }
+    } else if (dartType.typeName in DART_BASIC_TYPES) {
         addTextSegment(variableName)
     } else if (isEnum) {
         addTextSegment("$variableName.name")
@@ -199,7 +204,7 @@ private fun Template.addFromMap(
                 }
 
                 val isWrapped =
-                    withParseWrapper(typeName = it.type, parseWrapper = params.parseWrapper, isEnum = it.isEnum) {
+                    withParseWrapper(dartType = it.dartType, parseWrapper = params.parseWrapper, isEnum = it.isEnum) {
                         addMapValue()
                     }
 
@@ -222,12 +227,12 @@ private fun Template.addFromMap(
 
 // 包裹自定义装换
 fun Template.withParseWrapper(
-    typeName: String,
+    dartType: ParamDartType,
     parseWrapper: ParseWrapper,
     isEnum: Boolean = false,
     action: Template.() -> Unit
 ): Boolean {
-    val parseWrapperMethod = when (typeName) {
+    val parseWrapperMethod = when (dartType.fullTypeName) {
         "String" -> "parseString"
         "int" -> "parseInt"
         "double" -> "parseDouble"
@@ -245,40 +250,39 @@ fun Template.withParseWrapper(
         this.action()
         this.addTextSegment(")")
         return true
-    } else if (typeName.startsWith("List")) {
-        val subTypeName = typeName.subType()
+    } else if (dartType.typeName == "List") {
         this.addTextSegment("${parseWrapper.parseClassName}.")
         this.addTextSegment("parseList")
         this.addTextSegment("(")
         this.action()
         this.addTextSegment(", (e) => ")
-        this.withParseWrapper(subTypeName, parseWrapper) {
+        this.withParseWrapper(dartType.argumentTypeList.firstOrNull() ?: dynamicDartType, parseWrapper) {
             this.addTextSegment("e")
         }
         this.addTextSegment(")")
         return true
-    } else if (typeName.startsWith("Set")) {
-        this.withParseWrapper(typeName.replace("Set", "List"), parseWrapper) {
+    } else if (dartType.typeName == "Set") {
+        this.withParseWrapper(dartType.copy(typeName = "List", fullTypeName = "List"), parseWrapper) {
             action()
         }
         addTextSegment(".toSet()")
         return true
-    } else if (typeName == "dynamic") {
+    } else if (dartType.typeName == "dynamic") {
         action()
         return false
     } else if (isEnum) {
-        this.addTextSegment(typeName)
+        this.addTextSegment(dartType.typeName)
         this.addTextSegment(".values.asNameMap()[")
         this.addTextSegment("${parseWrapper.parseClassName}.parseString")
         this.withParentheses {
             action()
         }
         this.addTextSegment("]")
-        this.addTextSegment(" ?? $typeName.values[0]")
+        this.addTextSegment(" ?? ${dartType.typeName}.values[0]")
 
         return true
     } else {
-        this.addTextSegment(typeName)
+        this.addTextSegment(dartType.typeName)
         this.addTextSegment(".fromMap")
         this.withParentheses {
             this.addTextSegment("${parseWrapper.parseClassName}.")

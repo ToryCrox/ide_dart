@@ -4,6 +4,7 @@ import com.tory.DartFileNotWellFormattedException
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.jetbrains.lang.dart.psi.*
 import com.tory.ext.psi.findFirstChildByType
+import com.tory.templater.ParamDartType
 import com.tory.templater.VariableTemplateParam
 
 // DartVarAccessDeclaration can not be null
@@ -166,6 +167,15 @@ fun Iterable<VariableDeclarationPsiElements>.allMembersFinal(): Boolean {
         .all { it.isFinal }
 }
 
+fun DartType.resolveDartType(): ParamDartType {
+    return ParamDartType(
+        fullTypeName = text?.substringBeforeLast("?") ?: "",
+        typeName = referenceExpression?.text ?: "",
+        isNullable = text?.endsWith("?") ?: false,
+        argumentTypeList = typeArguments?.typeList?.typeList?.map { it.resolveDartType() } ?: emptyList()
+    )
+}
+
 /**
  * 转换成需要使用的 VariableTemplateParam 类
  */
@@ -178,6 +188,7 @@ fun VariableDeclaration.toVariableTemplateParam(): VariableTemplateParam {
         isNullable = isNullable,
         jsonKey = customJsonKey,
         isEnum = isEnum,
-        enumVariableList = enumVariableList
+        enumVariableList = enumVariableList,
+        dartType = dartType?.resolveDartType() ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
     )
 }

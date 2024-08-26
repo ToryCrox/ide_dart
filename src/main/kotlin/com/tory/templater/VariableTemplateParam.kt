@@ -12,16 +12,35 @@ data class VariableTemplateParam(
     val variableName: String,
     val isNullable: Boolean,
     val type: String,
+    val dartType: ParamDartType,
     val publicVariableName: String,
     val jsonKey: String? = null,
     val isEnum: Boolean = false,
     val enumVariableList: List<String> = emptyList()
 )
 
+/**
+ * 参数类型
+ */
+data class ParamDartType(
+    val fullTypeName: String,
+    val typeName: String,
+    val isNullable: Boolean,
+    val argumentTypeList: List<ParamDartType>,
+)
+
+val dynamicDartType = ParamDartType(
+    fullTypeName = "dynamic",
+    typeName = "dynamic",
+    isNullable = true,
+    argumentTypeList = emptyList()
+)
+
 val equalsDefaultTemplateParam = VariableTemplateParam(
     variableName = "runtimeType",
     isNullable = false,
     type = "Type",
+    dartType = ParamDartType(fullTypeName = "", typeName = "", isNullable = false, argumentTypeList = emptyList()),
     publicVariableName = "runtimeType",
     isEnum = false,
     enumVariableList = emptyList()
@@ -29,10 +48,10 @@ val equalsDefaultTemplateParam = VariableTemplateParam(
 
 /// 默认值
 val VariableTemplateParam.defaultValue: String
-    get() = when (type){
+    get() = when (type) {
         "String" -> "''"
         "int" -> "0"
-        "double" -> ""
+        "double" -> "0"
         "bool" -> "false"
         else -> when {
             type.startsWith("List") -> "const []"
