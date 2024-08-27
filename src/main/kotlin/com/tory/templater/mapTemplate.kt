@@ -232,19 +232,24 @@ private fun Template.addFromMap(
                     }
                 }
 
+                if (it.isNullable) {
+                    addMapValue()
+                    addTextSegment(" == null ? null : ")
+                }
+
                 val isWrapped =
                     withParseWrapper(dartType = it.dartType, parseWrapper = params.parseWrapper) {
                         addMapValue()
                     }
 
-                // 非空设置默认值
-                if (!isWrapped && !it.isNullable) {
-                    addSpace()
-                    //addTextSegment("as")
-                    addTextSegment("??")
-                    addSpace()
-                    addTextSegment(it.defaultValue)
-                }
+//                // 非空设置默认值
+//                if (!isWrapped && !it.isNullable) {
+//                    addSpace()
+//                    //addTextSegment("as")
+//                    addTextSegment("??")
+//                    addSpace()
+//                    addTextSegment(it.defaultValue)
+//                }
 
                 addComma()
                 addNewLine()
