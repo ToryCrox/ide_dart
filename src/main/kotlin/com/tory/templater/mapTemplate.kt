@@ -55,6 +55,7 @@ private fun Template.addAssignKeyMapperIfNotValid() {
 private fun Template.addToMap(params: MapTemplateParams) {
     val (_, variables, _, addKeyMapper, _) = params
     val useUnderlineJsonName = params.useUnderlineJsonName
+    val parseWrapper = params.parseWrapper
 
     isToReformat = true
 
@@ -84,7 +85,8 @@ private fun Template.addToMap(params: MapTemplateParams) {
             addNewLine()
 
             variables.forEach {
-                val jsonKey = it.jsonKey ?: if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
+                val jsonKey =
+                    it.jsonKey ?: if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
                 "'$jsonKey'".also { keyParam ->
                     if (addKeyMapper) {
                         addTextSegment(TemplateConstants.KEYMAPPER_VARIABLE_NAME)
@@ -98,7 +100,7 @@ private fun Template.addToMap(params: MapTemplateParams) {
 
                 addTextSegment(":")
                 addSpace()
-                toJsonMapValue(it.dartType, it.variableName, isEnum = it.isEnum)
+                toJsonMapValue(it.dartType, it.variableName, parseWrapper = parseWrapper)
                 addComma()
                 addNewLine()
             }
@@ -107,8 +109,8 @@ private fun Template.addToMap(params: MapTemplateParams) {
     }
 }
 
-private val DART_BASIC_TYPES = setOf("num", "int", "double", "bool", "String", "List", "Map", "Set", "color")
-private fun Template.toJsonMapValue(dartType: ParamDartType, variableName: String, isEnum: Boolean = false) {
+private val DART_BASIC_TYPES = setOf("num", "int", "double", "bool", "String", "dynamic", "Object")
+private fun Template.toJsonMapValue(dartType: ParamDartType, variableName: String, parseWrapper: ParseWrapper) {
     if (dartType.typeName in setOf("List", "Set")) {
         val subType = dartType.argumentTypeList.firstOrNull() ?: dynamicDartType
         if (subType.typeName in DART_BASIC_TYPES) {
@@ -116,12 +118,38 @@ private fun Template.toJsonMapValue(dartType: ParamDartType, variableName: Strin
         } else {
             addTextSegment(variableName)
             addTextSegment(".map((e)=> ")
-            toJsonMapValue(subType, "e")
+            toJsonMapValue(subType, "e", parseWrapper = parseWrapper)
             addTextSegment(").toList()")
+        }
+    } else if (dartType.typeName == "Map") {
+        val keyType = dartType.argumentTypeList.getOrNull(0) ?: dynamicDartType
+        val valueType = dartType.argumentTypeList.getOrNull(1) ?: dynamicDartType
+        val keyTypeIsValid = (keyType.typeName == "String" || keyType.typeName == "dynamic")
+        if (keyTypeIsValid &&
+            valueType.typeName in DART_BASIC_TYPES
+        ) {
+            addTextSegment(variableName)
+        } else {
+            addTextSegment(variableName)
+            addTextSegment(".map")
+            withParentheses {
+                addTextSegment("(key, value) => MapEntry")
+                withParentheses {
+                    if (keyTypeIsValid) {
+                        addTextSegment("key")
+                    } else {
+                        withParseWrapper(stringDartType, parseWrapper) {
+                            addTextSegment("key")
+                        }
+                    }
+                    addTextSegment(", ")
+                    toJsonMapValue(valueType, "value", parseWrapper = parseWrapper)
+                }
+            }
         }
     } else if (dartType.typeName in DART_BASIC_TYPES) {
         addTextSegment(variableName)
-    } else if (isEnum) {
+    } else if (dartType.isEnum) {
         addTextSegment("$variableName.name")
     } else {
         addTextSegment("$variableName.toMap()")
@@ -189,7 +217,8 @@ private fun Template.addFromMap(
                 val addMapValue = {
                     addTextSegment(TemplateConstants.MAP_VARIABLE_NAME)
                     withBrackets {
-                        val jsonKey = it.jsonKey ?: if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
+                        val jsonKey = it.jsonKey
+                            ?: if (useUnderlineJsonName) camelCaseToSnakeCase(it.mapKeyString) else it.mapKeyString
                         "'$jsonKey'".also { keyParam ->
                             if (addKeyMapper) {
                                 addTextSegment(TemplateConstants.KEYMAPPER_VARIABLE_NAME)
@@ -204,7 +233,7 @@ private fun Template.addFromMap(
                 }
 
                 val isWrapped =
-                    withParseWrapper(dartType = it.dartType, parseWrapper = params.parseWrapper, isEnum = it.isEnum) {
+                    withParseWrapper(dartType = it.dartType, parseWrapper = params.parseWrapper) {
                         addMapValue()
                     }
 
@@ -229,7 +258,6 @@ private fun Template.addFromMap(
 fun Template.withParseWrapper(
     dartType: ParamDartType,
     parseWrapper: ParseWrapper,
-    isEnum: Boolean = false,
     action: Template.() -> Unit
 ): Boolean {
     val parseWrapperMethod = when (dartType.fullTypeName) {
@@ -243,12 +271,13 @@ fun Template.withParseWrapper(
         "List<String>" -> "parseStringList"
         else -> ""
     }
-    if (parseWrapperMethod.isNotBlank()) {
+    if (dartType.typeName == "dynamic") {
+        action()
+        return false
+    } else if (parseWrapperMethod.isNotBlank()) {
         this.addTextSegment("${parseWrapper.parseClassName}.")
         this.addTextSegment(parseWrapperMethod)
-        this.addTextSegment("(")
-        this.action()
-        this.addTextSegment(")")
+        withParentheses { action() }
         return true
     } else if (dartType.typeName == "List") {
         this.addTextSegment("${parseWrapper.parseClassName}.")
@@ -267,10 +296,36 @@ fun Template.withParseWrapper(
         }
         addTextSegment(".toSet()")
         return true
-    } else if (dartType.typeName == "dynamic") {
-        action()
-        return false
-    } else if (isEnum) {
+    } else if (dartType.typeName == "Map") {
+        this.addTextSegment("${parseWrapper.parseClassName}.")
+        this.addTextSegment("parseMap")
+        withParentheses { action() }
+
+        val keyType = dartType.argumentTypeList.getOrNull(0) ?: dynamicDartType
+        val valueType = dartType.argumentTypeList.getOrNull(1) ?: dynamicDartType
+        this.addTextSegment(".map")
+        withParentheses {
+            this.addTextSegment("(key, value) => MapEntry")
+            withParentheses {
+                if (keyType.typeName == "String" || keyType.typeName == "dynamic") {
+                    addTextSegment("key")
+                } else {
+                    withParseWrapper(keyType, parseWrapper) {
+                        addTextSegment("key")
+                    }
+                }
+                addTextSegment(", ")
+                if (valueType.typeName == "dynamic") {
+                    addTextSegment("value")
+                } else {
+                    withParseWrapper(valueType, parseWrapper) {
+                        addTextSegment("value")
+                    }
+                }
+            }
+        }
+        return true
+    } else if (dartType.isEnum) {
         this.addTextSegment(dartType.typeName)
         this.addTextSegment(".values.asNameMap()[")
         this.addTextSegment("${parseWrapper.parseClassName}.parseString")
@@ -278,7 +333,7 @@ fun Template.withParseWrapper(
             action()
         }
         this.addTextSegment("]")
-        this.addTextSegment(" ?? ${dartType.typeName}.values[0]")
+        this.addTextSegment(" ?? ${dartType.typeName}.${dartType.enumVariableList.firstOrNull() ?: throw Exception("can not find enum ${dartType.typeName} enumVariableList")}")
 
         return true
     } else {

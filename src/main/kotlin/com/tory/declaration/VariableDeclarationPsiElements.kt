@@ -60,23 +60,31 @@ val VariableDeclarationPsiElements.variableName: String
  * DartEnumDefinitionImpl  枚举
  * DartClassDefinitionImpl 普通类
  */
-val VariableDeclarationPsiElements.dartClass: DartClass?
+val DartType.dartClass: DartClass?
     get() {
-        val target = dartType?.referenceExpression?.resolve()?.parent
+        val target = referenceExpression?.resolve()?.parent
         return if (target is DartClass) target else null
     }
+
+/// 是否为枚举
+val DartType.isEnum: Boolean
+    get() = dartClass?.isEnum == true
 
 /**
  * 是否是枚举
  */
 val VariableDeclarationPsiElements.isEnum: Boolean
-    get() = dartClass?.isEnum == true
+    get() = dartType?.dartClass?.isEnum == true
+
+/// 枚举值
+val DartType.enumVariableList: List<String>
+    get() = dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: "" } ?: emptyList()
 
 /**
  * 枚举列表
  */
 val VariableDeclarationPsiElements.enumVariableList: List<String>
-    get() = dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: "" } ?: emptyList()
+    get() = dartType?.dartClass?.enumConstantDeclarationList?.map { it.componentName?.name ?: "" } ?: emptyList()
 
 /**
  * 注解相关
@@ -172,7 +180,9 @@ fun DartType.resolveDartType(): ParamDartType {
         fullTypeName = text?.substringBeforeLast("?") ?: "",
         typeName = referenceExpression?.text ?: "",
         isNullable = text?.endsWith("?") ?: false,
-        argumentTypeList = typeArguments?.typeList?.typeList?.map { it.resolveDartType() } ?: emptyList()
+        argumentTypeList = typeArguments?.typeList?.typeList?.map { it.resolveDartType() } ?: emptyList(),
+        isEnum = isEnum,
+        enumVariableList = enumVariableList,
     )
 }
 
@@ -189,6 +199,7 @@ fun VariableDeclaration.toVariableTemplateParam(): VariableTemplateParam {
         jsonKey = customJsonKey,
         isEnum = isEnum,
         enumVariableList = enumVariableList,
-        dartType = dartType?.resolveDartType() ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
+        dartType = dartType?.resolveDartType()
+            ?: throw RuntimeException("No type is available - this variable should not be assignable from constructor"),
     )
 }
