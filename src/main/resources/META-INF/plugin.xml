@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.tory.ide_dart</id>
-    <name>Dart Ide工具</name>
+    <name>Dart Idea Tools</name>
     <vendor>Tory</vendor>
 
     <depends>Dart</depends>
