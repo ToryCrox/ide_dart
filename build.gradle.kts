@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.0.0"
     // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html#setting-up-intellij-platform
-    id("org.jetbrains.intellij.platform") version "2.0.1"
+    id("org.jetbrains.intellij.platform") version "2.7.2"
 }
 
 group = providers.gradleProperty("pluginGroup").get()

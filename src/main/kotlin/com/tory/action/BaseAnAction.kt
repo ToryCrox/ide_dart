@@ -6,17 +6,28 @@ import com.tory.action.init.tryCreateActionData
 import com.tory.action.init.tryExtractDartClassDefinition
 import com.tory.ext.*
 import com.intellij.codeInsight.template.TemplateManager
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.psi.PsiDocumentManager
 import com.jetbrains.lang.dart.psi.DartClassDefinition
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ApplicationManager
 
 abstract class BaseAnAction : AnAction() {
 
     override fun update(event: AnActionEvent) {
-        event.presentation.isEnabledAndVisible =
-            event.extractOuterDartClass() !== null
+        // 移到后台线程处理
+        ReadAction.run<Throwable> {
+            val isEnable = event.extractOuterDartClass() !== null
+
+            ApplicationManager.getApplication().invokeLater {
+                event.presentation.isEnabledAndVisible = isEnable
+            }
+        }
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT // 关键修复
 
     // Actions that change PSI elements should be
     fun startInTransaction(): Boolean = true
